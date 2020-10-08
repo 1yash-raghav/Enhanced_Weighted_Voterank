@@ -379,5 +379,72 @@ plt.ylabel('F(tc)')
 plt.legend(loc='best')
 n = len(list(G.nodes()))
 plt.show()
+ftc1 = []  # WH-index
+ftc6 = []  # WVoteRank
+ftc7 = []  # Degree
+ftc4 = []  # Imporved WV
+ftc9 = []  # closeness
+ftc11 = []  # Betweeness
 
 
+spreaders_fractions_list = [0.01, 0.05, 0.1, 0.15]
+for fraction in spreaders_fractions_list:
+    print(fraction)
+    spreaders = int(len(nodes) * fraction)
+
+    # W_Hindex
+    W_Hindex_centrality = W_Hindex
+    spreaders_list_W_hidex = Find_Spreaders(G, W_Hindex_centrality, spreaders)
+    infected_scale, ftc = SIRcall(G, spreaders_list_W_hidex, beta, S)
+    ftc1.append(ftc[len(ftc)-1])
+
+    # WVoterank
+    spreaders_wvc = WvoteRank(G, spreaders)
+    infected_scale, ftc = SIRcall(G, spreaders_wvc, beta, S)
+    ftc6.append(ftc[len(ftc)-1])
+
+    # degree
+    deg_centrality = deg
+    spreaders_list_deg = Find_Spreaders(G, deg_centrality, spreaders)
+    infected_scale, ftc = SIRcall(G, spreaders_list_deg, beta, S)
+    ftc7.append(ftc[len(ftc)-1])
+
+    # closeness
+    close_centrality = close
+    spreaders_list_close = Find_Spreaders(G, close_centrality, spreaders)
+    infected_scale, ftc = SIRcall(G, spreaders_list_close, beta, S)
+    ftc9.append(ftc[len(ftc)-1])
+
+    # between
+    bet_centrality = between
+    spreaders_list_bet = Find_Spreaders(G, bet_centrality, spreaders)
+    infected_scale, ftc = SIRcall(G, spreaders_list_bet, beta, S)
+    ftc11.append(ftc[len(ftc)-1])
+
+    # Improved WVoteRank
+    spreaders_list_EWV = E_W_Voterank(G, spreaders+20, core)
+    infected_scale, ftc = SIRcall(G, spreaders_list_EWV, beta, S)
+    ftc4.append(ftc[len(ftc)-1])
+
+with open(fileName+'ftcVsSpreaders.csv', 'w', newline='') as f:
+    thewriter = csv.writer(f)
+    thewriter.writerow(
+        ['', 'Degree', 'Between', 'Closeness', 'WHI', 'WV', 'EWV'])
+    for i in range(len(spreaders_fractions_list)):
+        thewriter.writerow(['Spreader Fraction : '+str(spreaders_fractions_list[i])+'   ', str(ft_deg[i]),
+                            str(ft_bet[i]), str(ft_close[i]), str(ft_whindex[i]), str(ft_wvote[i]), str(ft_e_wvote[i])])
+
+plt.plot(spreaders_fractions_list, ftc7, '-g*', label="Degree ", markersize=5)
+plt.plot(spreaders_fractions_list, ftc9, '-r*',
+         label="Closeness", markersize=5)
+plt.plot(spreaders_fractions_list, ftc11, '-b*',
+         label="Betweeness", markersize=5)
+plt.plot(spreaders_fractions_list, ftc1, '-yp', label="W_Hindex", markersize=5)
+plt.plot(spreaders_fractions_list, ftc6, '-mo',
+         label="WVoteRank", markersize=5)
+plt.plot(spreaders_fractions_list, ftc4, label="Improved-WVoterank",
+         marker='X', markerfacecolor='black')
+plt.ylabel("Final Infected Scale(F($t_c$))")
+plt.xlabel("Spreaders Fraction")
+plt.legend(loc='best')
+plt.show()
